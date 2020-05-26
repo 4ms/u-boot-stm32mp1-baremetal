@@ -1,5 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+DEVICE_TREE_EXT ?=
+
+ifneq ($(DEVICE_TREE_EXT),)
+dtb-y += $(DEVICE_TREE_EXT)
+endif
+
 dtb-$(CONFIG_TARGET_SMARTWEB) += at91sam9260-smartweb.dtb
 dtb-$(CONFIG_TARGET_TAURUS) += at91sam9g20-taurus.dtb
 dtb-$(CONFIG_TARGET_CORVUS) += at91sam9g45-corvus.dtb
