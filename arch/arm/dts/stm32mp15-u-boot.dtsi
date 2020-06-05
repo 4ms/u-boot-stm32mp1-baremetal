@@ -21,17 +21,9 @@
 		pinctrl1 = &pinctrl_z;
 	};
 
-	clocks {
-		u-boot,dm-pre-reloc;
-	};
-
 	/* need PSCI for sysreset during board_f */
 	psci {
 		u-boot,dm-pre-proper;
-	};
-
-	reboot {
-		u-boot,dm-pre-reloc;
 	};
 
 	soc {
@@ -40,26 +32,6 @@
 };
 
 &bsec {
-	u-boot,dm-pre-proper;
-};
-
-&clk_csi {
-	u-boot,dm-pre-reloc;
-};
-
-&clk_hsi {
-	u-boot,dm-pre-reloc;
-};
-
-&clk_hse {
-	u-boot,dm-pre-reloc;
-};
-
-&clk_lsi {
-	u-boot,dm-pre-reloc;
-};
-
-&clk_lse {
 	u-boot,dm-pre-reloc;
 };
 
@@ -128,13 +100,57 @@
 	u-boot,dm-pre-reloc;
 };
 
-&pwr {
+&pwr_regulators {
 	u-boot,dm-pre-reloc;
 };
 
 &rcc {
 	u-boot,dm-pre-reloc;
+	#address-cells = <1>;
+	#size-cells = <0>;
 };
+
+#ifdef CONFIG_STM32MP1_TRUSTED
+&scmi0 {
+	u-boot,dm-pre-reloc;
+};
+
+&scmi0_clk {
+	u-boot,dm-pre-reloc;
+};
+
+&scmi0_mbox {
+	u-boot,dm-pre-reloc;
+};
+
+&scmi0_reset {
+	u-boot,dm-pre-reloc;
+};
+
+&scmi0_shm {
+	u-boot,dm-pre-reloc;
+};
+
+&scmi1 {
+	u-boot,dm-pre-reloc;
+};
+
+&scmi1_clk {
+	u-boot,dm-pre-reloc;
+};
+
+&scmi1_mbox {
+	u-boot,dm-pre-reloc;
+};
+
+&scmi1_shm {
+	u-boot,dm-pre-reloc;
+};
+
+&scmi_sram {
+	u-boot,dm-pre-reloc;
+};
+#endif
 
 &sdmmc1 {
 	compatible = "st,stm32-sdmmc2", "arm,pl18x", "arm,primecell";
@@ -148,6 +164,68 @@
 	compatible = "st,stm32-sdmmc2", "arm,pl18x", "arm,primecell";
 };
 
-&usbotg_hs {
-	compatible = "st,stm32mp1-hsotg", "snps,dwc2";
+/* NO MORE USE SCMI SUPPORT for BASIC boot chain */
+#ifndef CONFIG_STM32MP1_TRUSTED
+
+#include "stm32mp15-no-scmi.dtsi"
+
+/ {
+	clocks {
+		u-boot,dm-pre-reloc;
+
+		clk_hse: clk-hse {
+			u-boot,dm-pre-reloc;
+		};
+
+		clk_hsi: clk-hsi {
+			u-boot,dm-pre-reloc;
+		};
+
+		clk_lse: clk-lse {
+			u-boot,dm-pre-reloc;
+		};
+
+		clk_lsi: clk-lsi {
+			u-boot,dm-pre-reloc;
+		};
+
+		clk_csi: clk-csi {
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	reboot {
+		u-boot,dm-pre-reloc;
+	};
 };
+
+&clk_hse {
+	u-boot,dm-pre-reloc;
+};
+
+&clk_hsi {
+	u-boot,dm-pre-reloc;
+};
+
+&clk_lse {
+	u-boot,dm-pre-reloc;
+};
+
+&clk_lsi {
+	u-boot,dm-pre-reloc;
+};
+
+&clk_csi {
+	u-boot,dm-pre-reloc;
+};
+
+&cpu0_opp_table {
+	u-boot,dm-spl;
+	opp-650000000 {
+		u-boot,dm-spl;
+	};
+	opp-800000000 {
+		u-boot,dm-spl;
+	};
+};
+#endif /* CONFIG_STM32MP1_TRUSTED */

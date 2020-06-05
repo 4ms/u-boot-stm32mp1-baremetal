@@ -5,7 +5,7 @@
 
 / {
 	soc {
-		ddr: ddr@5A003000 {
+		ddr: ddr@5a003000 {
 			u-boot,dm-pre-reloc;
 
 			compatible = "st,stm32mp1-ddr";
@@ -31,6 +31,7 @@
 			st,mem-speed = <DDR_MEM_SPEED>;
 			st,mem-size = <DDR_MEM_SIZE>;
 
+#ifndef CONFIG_STM32MP1_TRUSTED
 			st,ctl-reg = <
 				DDR_MSTR
 				DDR_MRCTRL0
@@ -133,6 +134,7 @@
 				DDR_MR3
 			>;
 
+#ifdef DDR_PHY_CAL_SKIP
 			st,phy-cal = <
 				DDR_DX0DLLCR
 				DDR_DX0DQTR
@@ -147,6 +149,9 @@
 				DDR_DX3DQTR
 				DDR_DX3DQSTR
 			>;
+#endif
+
+#endif
 
 			status = "okay";
 		};
