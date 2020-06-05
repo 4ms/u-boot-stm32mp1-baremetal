@@ -3,6 +3,7 @@
 # Copyright (c) 2016, NVIDIA CORPORATION.
 #
 
+obj-$(CONFIG_ARM_SMC_MAILBOX) += arm-smc-mbox.o
 obj-$(CONFIG_$(SPL_)DM_MAILBOX) += mailbox-uclass.o
 obj-$(CONFIG_SANDBOX_MBOX) += sandbox-mbox.o
 obj-$(CONFIG_SANDBOX_MBOX) += sandbox-mbox-test.o

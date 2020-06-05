@@ -268,7 +268,6 @@ static int dsi_get_lane_mbps(void *priv_data, struct display_timing *timings,
 	u32 val;
 
 	/* Update lane capabilities according to hw version */
-	dsi->hw_version = dsi_read(dsi, DSI_VERSION) & VERSION;
 	dsi->lane_min_kbps = LANE_MIN_KBPS;
 	dsi->lane_max_kbps = LANE_MAX_KBPS;
 	if (dsi->hw_version == HWVER_131) {
@@ -351,6 +350,9 @@ static int stm32_dsi_attach(struct udevice *dev)
 
 	mplat = dev_get_platdata(priv->panel);
 	mplat->device = &priv->device;
+	device->lanes = mplat->lanes;
+	device->format = mplat->format;
+	device->mode_flags = mplat->mode_flags;
 
 	ret = panel_get_display_timing(priv->panel, &timings);
 	if (ret) {
@@ -471,6 +473,17 @@ static int stm32_dsi_probe(struct udevice *dev)
 
 	/* Reset */
 	reset_deassert(&rst);
+
+	/* check hardware version */
+	priv->hw_version = dsi_read(priv, DSI_VERSION) & VERSION;
+	if (priv->hw_version != HWVER_130 &&
+	    priv->hw_version != HWVER_131) {
+		dev_err(dev, "bad dsi hardware version\n");
+		clk_disable(&clk);
+		if (IS_ENABLED(CONFIG_DM_REGULATOR))
+			regulator_set_enable(priv->vdd_reg, false);
+		return -ENODEV;
+	}
 
 	return 0;
 err_clk:

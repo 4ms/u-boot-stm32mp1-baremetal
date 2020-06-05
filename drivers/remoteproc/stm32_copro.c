@@ -12,6 +12,7 @@
 #include <reset.h>
 #include <syscon.h>
 #include <asm/io.h>
+#include <asm/arch/stm32mp1_smc.h>
 
 #define RCC_GCR_HOLD_BOOT	0
 #define RCC_GCR_RELEASE_BOOT	1
@@ -22,14 +23,16 @@
  * @hold_boot_regmap:	regmap for remote processor reset hold boot
  * @hold_boot_offset:	offset of the register controlling the hold boot setting
  * @hold_boot_mask:	bitmask of the register for the hold boot field
- * @is_running:		is the remote processor running
+ * @secured_soc:	TZEN flag (register protection)
+ * @rsc_table_addr:	resource table address
  */
 struct stm32_copro_privdata {
 	struct reset_ctl reset_ctl;
 	struct regmap *hold_boot_regmap;
 	uint hold_boot_offset;
 	uint hold_boot_mask;
-	bool is_running;
+	bool secured_soc;
+	ulong rsc_table_addr;
 };
 
 /**
@@ -42,6 +45,7 @@ static int stm32_copro_probe(struct udevice *dev)
 	struct stm32_copro_privdata *priv;
 	struct regmap *regmap;
 	const fdt32_t *cell;
+	uint tz_offset, tz_mask, tzen;
 	int len, ret;
 
 	priv = dev_get_priv(dev);
@@ -69,6 +73,31 @@ static int stm32_copro_probe(struct udevice *dev)
 		return ret;
 	}
 
+	regmap = syscon_regmap_lookup_by_phandle(dev, "st,syscfg-tz");
+	if (IS_ERR(regmap)) {
+		dev_dbg(dev, "unable to find tz regmap (%ld)\n",
+			PTR_ERR(regmap));
+		return -EINVAL;
+	}
+
+	cell = dev_read_prop(dev, "st,syscfg-tz", &len);
+	if (3 * sizeof(fdt32_t) - len > 0) {
+		dev_dbg(dev, "tz offset and mask not available\n");
+		return -EINVAL;
+	}
+
+	tz_offset = fdtdec_get_number(cell + 1, 1);
+
+	tz_mask = fdtdec_get_number(cell + 2, 1);
+
+	ret = regmap_read(regmap, tz_offset, &tzen);
+	if (ret) {
+		dev_dbg(dev, "failed to read soc secure state\n");
+		return ret;
+	}
+
+	priv->secured_soc = !!(tzen & tz_mask);
+
 	dev_dbg(dev, "probed\n");
 
 	return 0;
@@ -89,6 +118,11 @@ static int stm32_copro_set_hold_boot(struct udevice *dev, bool hold)
 	priv = dev_get_priv(dev);
 
 	val = hold ? RCC_GCR_HOLD_BOOT : RCC_GCR_RELEASE_BOOT;
+
+	if (priv->secured_soc) {
+		return stm32_smc_exec(STM32_SMC_RCC, STM32_SMC_REG_WRITE,
+				      priv->hold_boot_offset, val);
+	}
 
 	/*
 	 * Note: shall run an SMC call (STM32_SMC_RCC) if platform is secured.
@@ -141,6 +175,7 @@ static void *stm32_copro_device_to_virt(struct udevice *dev, ulong da,
 static int stm32_copro_load(struct udevice *dev, ulong addr, ulong size)
 {
 	struct stm32_copro_privdata *priv;
+	ulong rsc_table_size;
 	int ret;
 
 	priv = dev_get_priv(dev);
@@ -153,6 +188,12 @@ static int stm32_copro_load(struct udevice *dev, ulong addr, ulong size)
 	if (ret) {
 		dev_err(dev, "Unable to assert reset line (ret=%d)\n", ret);
 		return ret;
+	}
+
+	if (rproc_elf32_load_rsc_table(dev, addr, size, &priv->rsc_table_addr,
+				       &rsc_table_size)) {
+		priv->rsc_table_addr = 0;
+		dev_warn(dev, "No valid resource table for this firmware\n");
 	}
 
 	return rproc_elf32_load_image(dev, addr, size);
@@ -180,7 +221,12 @@ static int stm32_copro_start(struct udevice *dev)
 	 * rebooting autonomously
 	 */
 	ret = stm32_copro_set_hold_boot(dev, true);
-	priv->is_running = !ret;
+	writel(ret ? TAMP_COPRO_STATE_OFF : TAMP_COPRO_STATE_CRUN,
+	       TAMP_COPRO_STATE);
+	if (!ret)
+		/* Store rsc_address in bkp register */
+		writel(priv->rsc_table_addr, TAMP_COPRO_RSC_TBL_ADDRESS);
+
 	return ret;
 }
 
@@ -206,7 +252,7 @@ static int stm32_copro_reset(struct udevice *dev)
 		return ret;
 	}
 
-	priv->is_running = false;
+	writel(TAMP_COPRO_STATE_OFF, TAMP_COPRO_STATE);
 
 	return 0;
 }
@@ -224,14 +270,11 @@ static int stm32_copro_stop(struct udevice *dev)
 /**
  * stm32_copro_is_running() - Is the STM32 remote processor running
  * @dev:	corresponding STM32 remote processor device
- * @return 1 if the remote processor is running, 0 otherwise
+ * @return 0 if the remote processor is running, 1 otherwise
  */
 static int stm32_copro_is_running(struct udevice *dev)
 {
-	struct stm32_copro_privdata *priv;
-
-	priv = dev_get_priv(dev);
-	return priv->is_running;
+	return (readl(TAMP_COPRO_STATE) == TAMP_COPRO_STATE_OFF);
 }
 
 static const struct dm_rproc_ops stm32_copro_ops = {

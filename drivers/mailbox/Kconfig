@@ -47,4 +47,11 @@ config ZYNQMP_IPI
 	help
 	  This enables support for the Xilinx ZynqMP Inter Processor Interrupt
 	  communication controller.
+
+config ARM_SMC_MAILBOX
+	bool "Enable Arm SMC mailbox support"
+        depends on DM_MAILBOX && ARM_SMCCC
+	help
+	  Mailbox notification through an Arm SMC or HVC calls.
+
 endmenu

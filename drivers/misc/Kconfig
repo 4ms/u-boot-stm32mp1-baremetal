@@ -439,4 +439,16 @@ config K3_AVS0
 	  optimized voltage from the efuse, so that it can be programmed
 	  to the PMIC on board.
 
+config SCMI_AGENT
+	bool "Enable SCMI support"
+	select OF_TRANSLATE
+	help
+	  An SCMI agent communicates with a related SCMI server located
+	  in another sub-system, as a companion micro controller or a
+	  companion host in the CPU system.
+
+	  Communications between agent (client) and the SCMI server are
+	  based on message exchange, for example through a mailbox device
+	  and some piece of identified shared memory.
+
 endmenu

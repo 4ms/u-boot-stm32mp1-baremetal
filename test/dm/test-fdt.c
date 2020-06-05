@@ -196,7 +196,7 @@ static int dm_test_fdt(struct unit_test_state *uts)
 	int ret;
 	int i;
 
-	ret = dm_scan_fdt(gd->fdt_blob, false);
+	ret = dm_extended_scan_fdt(gd->fdt_blob, false);
 	ut_assert(!ret);
 
 	ret = uclass_get(UCLASS_TEST_FDT, &uc);
@@ -227,7 +227,7 @@ static int dm_test_alias_highest_id(struct unit_test_state *uts)
 	ut_asserteq(5, ret);
 
 	ret = dev_read_alias_highest_id("gpio");
-	ut_asserteq(2, ret);
+	ut_asserteq(3, ret);
 
 	ret = dev_read_alias_highest_id("pci");
 	ut_asserteq(2, ret);

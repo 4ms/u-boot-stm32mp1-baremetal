@@ -23,27 +23,30 @@
 #define CONFIG_SYS_SDRAM_BASE			STM32_DDR_BASE
 #define CONFIG_SYS_INIT_SP_ADDR			CONFIG_SYS_TEXT_BASE
 
-#ifdef CONFIG_STM32MP1_OPTEE
-#define CONFIG_SYS_MEM_TOP_HIDE			SZ_32M
-#endif /* CONFIG_STM32MP1_OPTEE */
-
 /*
  * Console I/O buffer size
  */
 #define CONFIG_SYS_CBSIZE			SZ_1K
 
 /*
- * Needed by "loadb"
+ * default load address used for command tftp,  bootm , loadb, ...
  */
-#define CONFIG_SYS_LOAD_ADDR			STM32_DDR_BASE
+#define CONFIG_LOADADDR			0xc2000000
+#define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
 
 /* ATAGs */
 #define CONFIG_CMDLINE_TAG
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_INITRD_TAG
 
+/*
+ * For booting Linux, use the first 256 MB of memory, since this is
+ * the maximum mapped by the Linux kernel during initialization.
+ */
+#define CONFIG_SYS_BOOTMAPSZ		SZ_256M
+
 /* Extend size of kernel image for uncompression */
-#define CONFIG_SYS_BOOTM_LEN			SZ_32M
+#define CONFIG_SYS_BOOTM_LEN		SZ_32M
 
 /* SPL support */
 #ifdef CONFIG_SPL
@@ -70,6 +73,11 @@
 #define CONFIG_SYS_NAND_ONFI_DETECTION
 #define CONFIG_SYS_MAX_NAND_DEVICE	1
 
+/* SPI FLASH support */
+#if defined(CONFIG_SPL_BUILD)
+#define CONFIG_SYS_SPI_U_BOOT_OFFS	0x80000
+#endif
+
 /* Ethernet need */
 #ifdef CONFIG_DWC_ETH_QOS
 #define CONFIG_SYS_NONCACHED_MEMORY	(1 * SZ_1M)	/* 1M */
@@ -77,13 +85,6 @@
 #define CONFIG_BOOTP_SERVERIP
 #define CONFIG_SYS_AUTOLOAD		"no"
 #endif
-
-/* Dynamic MTD partition support */
-#if defined(CONFIG_STM32_QSPI) || defined(CONFIG_NAND_STM32_FMC2)
-#define CONFIG_SYS_MTDPARTS_RUNTIME
-#endif
-
-#define CONFIG_SET_DFU_ALT_INFO
 
 #ifdef CONFIG_DM_VIDEO
 #define CONFIG_VIDEO_BMP_RLE8
@@ -98,20 +99,44 @@
 
 #if !defined(CONFIG_SPL_BUILD)
 
-#define BOOT_TARGET_DEVICES(func) \
-	func(MMC, mmc, 1) \
-	func(UBIFS, ubifs, 0) \
-	func(MMC, mmc, 0) \
-	func(MMC, mmc, 2) \
-	func(PXE, pxe, na)
+#ifdef CONFIG_CMD_MMC
+#define BOOT_TARGET_MMC0(func)	func(MMC, mmc, 0)
+#define BOOT_TARGET_MMC1(func)	func(MMC, mmc, 1)
+#define BOOT_TARGET_MMC2(func)	func(MMC, mmc, 2)
+#else
+#define BOOT_TARGET_MMC0(func)
+#define BOOT_TARGET_MMC1(func)
+#define BOOT_TARGET_MMC2(func)
+#endif
+
+#ifdef CONFIG_NET
+#define BOOT_TARGET_PXE(func)	func(PXE, pxe, na)
+#else
+#define BOOT_TARGET_PXE(func)
+#endif
+
+#ifdef CONFIG_CMD_UBIFS
+#define BOOT_TARGET_UBIFS(func)	func(UBIFS, ubifs, 0)
+#else
+#define BOOT_TARGET_UBIFS(func)
+#endif
+
+#define BOOT_TARGET_DEVICES(func)	\
+	BOOT_TARGET_MMC1(func)		\
+	BOOT_TARGET_UBIFS(func)		\
+	BOOT_TARGET_MMC0(func)		\
+	BOOT_TARGET_MMC2(func)		\
+	BOOT_TARGET_PXE(func)
 
 /*
  * bootcmd for stm32mp1:
+ *    CONFIG_BOOTCOMMAND="run bootcmd_stm32mp"
  * for serial/usb: execute the stm32prog command
  * for mmc boot (eMMC, SD card), boot only on the same device
- * for nand boot, boot with on ubifs partition on nand
- * for nor boot, use the default order
+ * for nand or spi-nand boot, boot with on ubifs partition on UBI partition
+ * for nor boot, use SD card = mmc0
  */
+
 #define STM32MP_BOOTCMD "bootcmd_stm32mp=" \
 	"echo \"Boot over ${boot_device}${boot_instance}!\";" \
 	"if test ${boot_device} = serial || test ${boot_device} = usb;" \
@@ -120,64 +145,85 @@
 		"run env_check;" \
 		"if test ${boot_device} = mmc;" \
 		"then env set boot_targets \"mmc${boot_instance}\"; fi;" \
-		"if test ${boot_device} = nand;" \
+		"if test ${boot_device} = nand ||" \
+		  " test ${boot_device} = spi-nand ;" \
 		"then env set boot_targets ubifs0; fi;" \
+		"if test ${boot_device} = nor;" \
+		"then env set boot_targets mmc0; fi;" \
 		"run distro_bootcmd;" \
 	"fi;\0"
 
-#include <config_distro_bootcmd.h>
+/* DTIMG command added only for Android distribution */
+#ifdef CONFIG_CMD_DTIMG
+/*
+ * bootcmd for android on MMC:
+ *    CONFIG_BOOTCOMMAND="run bootcmd_android"
+ * overidde DISTRO script "mmc_boot" to boot android on mmc
+ * using system_${suffix} partition (with "_a") by default
+ * - display splash screen
+ * - load device tree form dtimg
+ * - load kernel and set bootargs
+ * - start kernel
+ */
 
-#ifdef CONFIG_STM32MP1_OPTEE
-/* with OPTEE: define specific MTD partitions = teeh, teed, teex */
-#define STM32MP_MTDPARTS \
-	"mtdparts_nor0=256k(fsbl1),256k(fsbl2),2m(ssbl),256k(u-boot-env),256k(teeh),256k(teed),256k(teex),-(nor_user)\0" \
-	"mtdparts_nand0=2m(fsbl),2m(ssbl1),2m(ssbl2),512k(teeh),512k(teed),512k(teex),-(UBI)\0" \
-	"mtdparts_spi-nand0=2m(fsbl),2m(ssbl1),2m(ssbl2),"\
-		"512k(teeh),512k(teed),512k(teex),-(UBI)\0"
+#define STM32MP_ANDROID \
+	"suffix=a\0" \
+	"dtimg_addr=0xc4500000\0" \
+	"android_mmc_splash="\
+		"if part start mmc ${devnum} splash splash_start && " \
+		   "part size mmc ${devnum} splash splash_size;"\
+		"then " \
+		   "mmc read ${splashimage} ${splash_start} ${splash_size};" \
+		   "cls; bmp display ${splashimage} m m;" \
+		"fi\0" \
+	"android_mmc_fdt="\
+		"if part start mmc ${devnum} dt_${suffix} dt_start &&" \
+		   "part size mmc ${devnum} dt_${suffix} dt_size;"\
+		"then " \
+		   "mmc read ${dtimg_addr} ${dt_start} ${dt_size};" \
+		   "dtimg getindex ${dtimg_addr} ${board_id} ${board_rev}" \
+		     " dt_index;" \
+		   "dtimg start ${dtimg_addr} ${dt_index} fdt_addr_r;"\
+		"fi\0" \
+	"android_mmc_kernel="\
+		"if part start mmc ${devnum} boot_${suffix} boot_start &&" \
+		   "part size mmc ${devnum} boot_${suffix} boot_size;"\
+		"then " \
+		   "mmc read ${kernel_addr_r} ${boot_start} ${boot_size};" \
+		   "part nb mmc ${devnum} system_${suffix} rootpart_nb;" \
+		   "env set bootargs" \
+		     "root=/dev/mmcblk${devnum}p${rootpart_nb} " \
+		     "androidboot.serialno=${serial#} " \
+		     "androidboot.slot_suffix=_${suffix};"\
+		"fi\0" \
+	"android_mmc_boot="\
+		"mmc dev ${devnum};"\
+		"run android_mmc_splash;" \
+		"run android_mmc_fdt;" \
+		"run android_mmc_kernel;" \
+		"bootm ${kernel_addr_r} - ${fdt_addr_r};\0" \
+	"bootcmd_android=" \
+		"env set mmc_boot run android_mmc_boot;" \
+		"run bootcmd_stm32mp\0"
 
-#else /* CONFIG_STM32MP1_OPTEE */
-#define STM32MP_MTDPARTS \
-	"mtdparts_nor0=256k(fsbl1),256k(fsbl2),2m(ssbl),256k(u-boot-env),-(nor_user)\0" \
-	"mtdparts_nand0=2m(fsbl),2m(ssbl1),2m(ssbl2),-(UBI)\0" \
-	"mtdparts_spi-nand0=2m(fsbl),2m(ssbl1),2m(ssbl2),-(UBI)\0"
-
-#endif /* CONFIG_STM32MP1_OPTEE */
-
-#ifndef CONFIG_SYS_MTDPARTS_RUNTIME
-#undef STM32MP_MTDPARTS
-#define STM32MP_MTDPARTS
-#endif
-
-#define STM32MP_DFU_ALT_RAM \
-	"dfu_alt_info_ram=ram 0=" \
-		"uImage ram ${kernel_addr_r} 0x2000000;" \
-		"devicetree.dtb ram ${fdt_addr_r} 0x100000;" \
-		"uramdisk.image.gz ram ${ramdisk_addr_r} 0x10000000\0"
-
-#ifdef CONFIG_SET_DFU_ALT_INFO
-#define STM32MP_DFU_ALT_INFO \
-	"dfu_alt_info_nor0=mtd nor0=" \
-		"nor_fsbl1 part 1;nor_fsbl2 part 2;" \
-		"nor_ssbl part 3;nor_env part 4\0" \
-	"dfu_alt_info_nand0=mtd nand0="\
-		"nand_fsbl part 1;nand_ssbl1 part 2;" \
-		"nand_ssbl2 part 3;nand_UBI partubi 4\0" \
-	"dfu_alt_info_spi-nand0=mtd spi-nand0="\
-		"spi-nand_fsbl part 1;spi-nand_ssbl1 part 2;" \
-		"spi-nand_ssbl2 part 3;spi-nand_UBI partubi 4\0" \
-	"dfu_alt_info_mmc0=mmc 0=" \
-		"sdcard_fsbl1 part 0 1;sdcard_fsbl2 part 0 2;" \
-		"sdcard_ssbl part 0 3;sdcard_bootfs part 0 4;" \
-		"sdcard_vendorfs part 0 5;sdcard_rootfs part 0 6;" \
-		"sdcard_userfs part 0 7\0" \
-	"dfu_alt_info_mmc1=mmc 1=" \
-		"emmc_fsbl1 raw 0x0 0x200 mmcpart 1;" \
-		"emmc_fsbl2 raw 0x0 0x200 mmcpart 2;emmc_ssbl part 1 1;" \
-		"emmc_bootfs part 1 2;emmc_vendorfs part 1 3;" \
-		"emmc_rootfs part 1 4;emmc_userfs part 1 5\0"
 #else
-#define STM32MP_DFU_ALT_INFO
+#define STM32MP_ANDROID
+#endif/* CONFIG_CMD_DTIMG */
+
+#ifdef CONFIG_FASTBOOT_CMD_OEM_FORMAT
+/* eMMC default partitions for fastboot command: oem format */
+#define PARTS_DEFAULT \
+	"partitions=" \
+	"name=ssbl,size=2M;" \
+	"name=bootfs,size=64MB,bootable;" \
+	"name=vendorfs,size=16M;" \
+	"name=rootfs,size=746M;" \
+	"name=userfs,size=-\0"
+#else
+#define PARTS_DEFAULT
 #endif
+
+#include <config_distro_bootcmd.h>
 
 /*
  * memory layout for 32M uncompressed/compressed kernel,
@@ -192,16 +238,18 @@
 	"pxefile_addr_r=0xc4200000\0" \
 	"splashimage=0xc4300000\0"  \
 	"ramdisk_addr_r=0xc4400000\0" \
-	"fdt_high=0xffffffff\0" \
-	"initrd_high=0xffffffff\0" \
 	"altbootcmd=run bootcmd\0" \
-	"env_default=1\0" \
-	"env_check=if test $env_default -eq 1;"\
-		" then env set env_default 0;env save;fi\0" \
+	"env_check=" \
+		"env exists env_ver || env set env_ver ${ver};" \
+		"if env info -p -d -q; then env save; fi;" \
+		"if test \"$env_ver\" != \"$ver\"; then" \
+		" echo \"*** Warning: old environment ${env_ver}\";" \
+		" echo '* set default: env default -a; env save; reset';" \
+		" echo '* update current: env set env_ver ${ver}; env save';" \
+		"fi;\0" \
 	STM32MP_BOOTCMD \
-	STM32MP_MTDPARTS \
-	STM32MP_DFU_ALT_RAM \
-	STM32MP_DFU_ALT_INFO \
+	STM32MP_ANDROID \
+	PARTS_DEFAULT \
 	BOOTENV \
 	"boot_net_usb_start=true\0"
 
