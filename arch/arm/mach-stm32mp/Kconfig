@@ -85,6 +85,14 @@ config TARGET_DH_STM32MP1_PDK2
 	help
 		Target the DH PDK2 development kit with STM32MP15x SoM.
 
+config TARGET_OCTAVO_OSD32MP1_BRK
+	bool "Octavo OSD32MP1 BRK"
+	select STM32MP15x
+	imply BOOTCOUNT_LIMIT
+	imply CMD_BOOTCOUNT
+	help
+		Target the Octavo BRK board based on OSD32MP1 SiP.
+
 endchoice
 
 config STM32MP1_TRUSTED
@@ -178,5 +186,5 @@ endif
 
 source "board/st/stm32mp1/Kconfig"
 source "board/dhelectronics/dh_stm32mp1/Kconfig"
-
+source "board/octavo/osd32mp1-brk/Kconfig"
 endif
