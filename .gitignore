@@ -95,3 +95,5 @@ GTAGS
 
 /oe-*
 bitbake-cookerdaemon.log
+
+build/
