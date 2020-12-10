@@ -483,7 +483,13 @@
 		BOOTENV_SET_VIRTIO_NEED_INIT                              \
 		"for target in ${boot_targets}; do "                      \
 			"run bootcmd_${target}; "                         \
-		"done\0"
+		"done\0" \
+	\
+	"bootcmd_baremetal_arm="                                \
+	"mmc dev 0;"                                            \
+	"ext2load mmc 0:4 0xC2000040 bare-arm.uimg;"            \
+	"bootm 0xC2000040;"                                     \
+	"\0"
 
 #ifndef CONFIG_BOOTCOMMAND
 #define CONFIG_BOOTCOMMAND "run distro_bootcmd"
