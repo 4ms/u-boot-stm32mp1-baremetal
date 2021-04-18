@@ -487,7 +487,7 @@
 	\
 	"bootcmd_baremetal_arm="                                \
 	"mmc dev 0;"                                            \
-	"ext2load mmc 0:4 0xC2000040 bare-arm.uimg;"            \
+	"fatload mmc 0:4 0xC2000040 bare-arm.uimg;"            \
 	"bootm 0xC2000040;"                                     \
 	"\0"
 
