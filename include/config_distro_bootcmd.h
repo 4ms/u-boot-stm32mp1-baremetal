@@ -486,10 +486,7 @@
 		"done\0" \
 	\
 			"bootcmd_baremetal_arm="                                                                                   \
-			"rproc init;"                                                                                              \
 			"mmc dev 0;"                                                                                               \
-			"fatload mmc 0:4 0xC2000000 m4-main.elf;"                                                                  \
-			"rproc load 0 0xC2000000 ${filesize};"                                                                     \
 			"fatload mmc 0:4 0xC2000040 a7-main.uimg;"                                                                 \
 			"bootm 0xC2000040;"                                                                                        \
 	"\0"
