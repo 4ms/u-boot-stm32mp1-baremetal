@@ -19,11 +19,9 @@ u32 spl_boot_device(void)
 	switch (boot_mode) {
 	case BOOT_FLASH_SD_1:
 	case BOOT_FLASH_EMMC_1:
-		printf("Boot mode is MMC1\n");
 		return BOOT_DEVICE_MMC1;
 	case BOOT_FLASH_SD_2:
 	case BOOT_FLASH_EMMC_2:
-		printf("Boot mode is MMC2\n");
 		return BOOT_DEVICE_MMC2;
 	case BOOT_SERIAL_UART_1:
 	case BOOT_SERIAL_UART_2:
@@ -33,19 +31,14 @@ u32 spl_boot_device(void)
 	case BOOT_SERIAL_UART_6:
 	case BOOT_SERIAL_UART_7:
 	case BOOT_SERIAL_UART_8:
-		printf("Boot mode is UART\n");
 		return BOOT_DEVICE_UART;
 	case BOOT_SERIAL_USB_OTG:
-		printf("Boot mode is USB\n");
 		return BOOT_DEVICE_USB;
 	case BOOT_FLASH_NAND_FMC:
-		printf("Boot mode is NAND\n");
 		return BOOT_DEVICE_NAND;
 	case BOOT_FLASH_NOR_QSPI:
-		printf("Boot mode is SPI\n");
 		return BOOT_DEVICE_SPI;
 	case BOOT_FLASH_SPINAND_1:
-		printf("Boot mode is None\n");
 		return BOOT_DEVICE_NONE; /* SPINAND not supported in SPL */
 	}
 
