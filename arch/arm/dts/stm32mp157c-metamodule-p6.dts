@@ -19,7 +19,7 @@
 
 / {
 	model = "MetaModule p6";
-	compatible = "st,stm32mp157c-metamodule-p6", "st,stm32mp157";
+	compatible = "st,stm32mp157c-osd32mp1-brk", "st,stm32mp157";
 
 	memory@c0000000 {
 		device_type = "memory";
@@ -260,13 +260,11 @@
 
 /* Pasted from stm32mp15-pinctrl.dtsi */
 	qspi_clk_pins_a: qspi-clk-0 {
-		u-boot,dm-spl; //from stm32mp157a-ev1-u-boot.dtsi
 		pins {
 			pinmux = <STM32_PINMUX('F', 10, AF9)>; /* QSPI_CLK */
 			bias-disable;
 			drive-push-pull;
 			slew-rate = <3>;
-			u-boot,dm-spl; //from stm32mp157a-ev1-u-boot.dtsi
 		};
 	};
 
@@ -277,7 +275,6 @@
 	};
 
 	qspi_bk1_pins_a: qspi-bk1-0 {
-		u-boot,dm-spl; //from stm32mp157a-ev1-u-boot.dtsi
 		pins1 {
 			pinmux = <STM32_PINMUX('F', 8, AF10)>, /* QSPI_BK1_IO0 */
 				 <STM32_PINMUX('F', 9, AF10)>, /* QSPI_BK1_IO1 */
@@ -286,14 +283,12 @@
 			bias-disable;
 			drive-push-pull;
 			slew-rate = <1>;
-			u-boot,dm-spl; //from stm32mp157a-ev1-u-boot.dtsi
 		};
 		pins2 {
 			pinmux = <STM32_PINMUX('B', 6, AF10)>; /* QSPI_BK1_NCS */
 			bias-pull-up;
 			drive-push-pull;
 			slew-rate = <1>;
-			u-boot,dm-spl; //from stm32mp157a-ev1-u-boot.dtsi
 		};
 	};
 
@@ -308,7 +303,6 @@
 	};
 
 	qspi_bk2_pins_a: qspi-bk2-0 {
-		u-boot,dm-spl; //from stm32mp157a-ev1-u-boot.dtsi
 		pins1 {
 			pinmux = <STM32_PINMUX('H', 2, AF9)>, /* QSPI_BK2_IO0 */
 				 <STM32_PINMUX('H', 3, AF9)>, /* QSPI_BK2_IO1 */
@@ -317,10 +311,8 @@
 			bias-disable;
 			drive-push-pull;
 			slew-rate = <1>;
-			u-boot,dm-spl; //from stm32mp157a-ev1-u-boot.dtsi
 		};
 		pins2 {
-			u-boot,dm-spl; //from stm32mp157a-ev1-u-boot.dtsi
 			pinmux = <STM32_PINMUX('C', 0, AF10)>; /* QSPI_BK2_NCS */
 			bias-pull-up;
 			drive-push-pull;
@@ -1135,7 +1127,6 @@
 };
 
 &qspi {
-	u-boot,dm-spl; //from stm32mp157a-ev1-u-boot.dtsi
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&qspi_clk_pins_a &qspi_bk1_pins_a &qspi_bk2_pins_a>;
 	pinctrl-1 = <&qspi_clk_sleep_pins_a &qspi_bk1_sleep_pins_a &qspi_bk2_sleep_pins_a>;
