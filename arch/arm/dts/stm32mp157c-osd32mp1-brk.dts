@@ -136,6 +136,7 @@
     serial5 = &uart5;
     serial7 = &uart7;
     serial1 = &uart8;
+		spi0 = &qspi;
 	};
 
 	chosen{
