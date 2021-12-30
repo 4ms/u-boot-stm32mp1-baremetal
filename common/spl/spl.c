@@ -496,6 +496,7 @@ int spl_init(void)
 
 __weak void board_boot_order(u32 *spl_boot_list)
 {
+	puts("SPL: Using default weak board_boot_order.\n");
 	spl_boot_list[0] = spl_boot_device();
 }
 
