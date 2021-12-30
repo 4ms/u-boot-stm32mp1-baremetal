@@ -19,7 +19,7 @@
 
 / {
 	model = "MetaModule p6";
-	compatible = "st,stm32mp157c-osd32mp1-brk", "st,stm32mp157";
+	compatible = "st,stm32mp157c-metamodule-p6", "st,stm32mp157";
 
 	memory@c0000000 {
 		device_type = "memory";
@@ -125,10 +125,10 @@
 
 	aliases{
 		serial0 = &uart4;
-    serial2 = &usart2;
-    serial5 = &uart5;
-    serial7 = &uart7;
-    serial1 = &uart8;
+		serial2 = &usart2;
+		serial5 = &uart5;
+		serial7 = &uart7;
+		serial1 = &uart8;
 		spi0 = &qspi;
 	};
 
