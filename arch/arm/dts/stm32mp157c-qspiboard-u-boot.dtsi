@@ -188,6 +188,37 @@
 	status = "okay";
 };
 
+&qspi {
+	u-boot,dm-spl;
+};
+
+&qspi_clk_pins_a {
+	u-boot,dm-spl;
+	pins {
+		u-boot,dm-spl;
+	};
+};
+
+&qspi_bk1_pins_a {
+	u-boot,dm-spl;
+	pins1 {
+		u-boot,dm-spl;
+	};
+	pins2 {
+		u-boot,dm-spl;
+	};
+};
+
+&qspi_bk2_pins_a {
+	u-boot,dm-spl;
+	pins1 {
+		u-boot,dm-spl;
+	};
+	pins2 {
+		u-boot,dm-spl;
+	};
+};
+
 #ifndef CONFIG_STM32MP1_TRUSTED
 &i2s2{
 	clocks = <&rcc SPI2>, <&rcc SPI2_K>, <&rcc PLL3_Q>, <&rcc PLL3_R>;
