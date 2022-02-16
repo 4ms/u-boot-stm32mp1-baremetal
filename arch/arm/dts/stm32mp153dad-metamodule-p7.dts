@@ -124,7 +124,7 @@
 	};
 
 	aliases{
-		serial0 = &uart4;
+		serial0 = &usart6;
 		serial2 = &usart2;
 		serial5 = &uart5;
 		serial7 = &uart7;
@@ -235,6 +235,27 @@
     };
   };
 
+	i2c6_pins_mx: i2c6_mx-0 {
+		u-boot,dm-pre-reloc;
+		pins {
+			u-boot,dm-pre-reloc;
+			pinmux = <STM32_PINMUX('D', 1, AF2)>, /* I2C6_SCL */
+					 <STM32_PINMUX('D', 0, AF2)>; /* I2C6_SDA */
+			bias-disable;
+			drive-open-drain;
+			slew-rate = <0>;
+		};
+	};
+
+	i2c6_sleep_pins_mx: i2c6_sleep_mx-0 {
+		u-boot,dm-pre-reloc;
+		pins {
+			u-boot,dm-pre-reloc;
+			pinmux = <STM32_PINMUX('D', 1, ANALOG)>, /* I2C6_SCL */
+					 <STM32_PINMUX('D', 0, ANALOG)>; /* I2C6_SDA */
+		};
+	};
+
   spi2_pins_mx: spi2-0 {
     pins1 {
       pinmux = <STM32_PINMUX('I', 1, AF5)>, /* SPI2_SCK */
@@ -338,6 +359,36 @@
       pins {
         pinmux = <STM32_PINMUX('B', 13, ANALOG)>, /* USART5_TX */
            <STM32_PINMUX('B', 12, ANALOG)>; /* USART5_RX */
+      };
+    };
+
+  usart6_pins_mx: usart6-0 {
+      pins1 {
+        pinmux = <STM32_PINMUX('C', 6, AF7)>; /* USART6_TX */
+        bias-disable;
+        drive-push-pull;
+        slew-rate = <0>;
+      };
+      pins2 {
+        pinmux = <STM32_PINMUX('C', 7, AF7)>; /* USART6_RX */
+        bias-disable;
+      };
+    };
+
+    usart6_idle_pins_mx: usart6-idle-0 {
+      pins1 {
+        pinmux = <STM32_PINMUX('C', 6, ANALOG)>; /* USART6_TX */
+      };
+      pins2 {
+        pinmux = <STM32_PINMUX('C', 7, AF7)>; /* USART6_RX */
+        bias-disable;
+      };
+    };
+
+    usart6_sleep_pins_mx: usart6-sleep-0 {
+      pins {
+        pinmux = <STM32_PINMUX('C', 6, ANALOG)>, /* USART6_TX */
+           <STM32_PINMUX('C', 7, ANALOG)>; /* USART6_RX */
       };
     };
 
@@ -788,11 +839,11 @@
 	/delete-property/dma-names;
 };
 
-&i2c4{
+&i2c6{
 	u-boot,dm-pre-reloc;
 	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&i2c4_pins_mx>;
-	pinctrl-1 = <&i2c4_sleep_pins_mx>;
+	pinctrl-0 = <&i2c6_pins_mx>;
+	pinctrl-1 = <&i2c6_sleep_pins_mx>;
 	status = "okay";
 
 	i2c-scl-rising-time-ns = <185>;
@@ -897,8 +948,8 @@
 
 			vdda:ldo5{
 				regulator-name = "vdda";
-				regulator-min-microvolt = <2900000>;
-				regulator-max-microvolt = <2900000>;
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
 				interrupts = <IT_CURLIM_LDO5 0>;
 				regulator-boot-on;
 			};
@@ -947,11 +998,11 @@
 			status = "disabled";
 		};
 	};
-	eeprom@50 {
-		compatible = "atmel,24c02";
-		reg = <0x50>;
-		pagesize = <16>;
-	};
+	/* eeprom@50 { */
+	/* 	compatible = "atmel,24c02"; */
+	/* 	reg = <0x50>; */
+	/* 	pagesize = <16>; */
+	/* }; */
 };
 
 &ipcc{
@@ -999,11 +1050,12 @@
 	status = "okay";
 };
 
-&uart4{
+
+&usart6{
 	u-boot,dm-pre-reloc;
 	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&uart4_pins_mx>;
-	pinctrl-1 = <&uart4_sleep_pins_mx>;
+	pinctrl-0 = <&uart6_pins_mx>;
+	pinctrl-1 = <&uart6_sleep_pins_mx>;
 	status = "okay";
 
 	/delete-property/ dmas;
