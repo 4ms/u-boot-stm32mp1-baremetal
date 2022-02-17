@@ -1054,8 +1054,8 @@
 &usart6{
 	u-boot,dm-pre-reloc;
 	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&uart6_pins_mx>;
-	pinctrl-1 = <&uart6_sleep_pins_mx>;
+	pinctrl-0 = <&usart6_pins_mx>;
+	pinctrl-1 = <&usart6_sleep_pins_mx>;
 	status = "okay";
 
 	/delete-property/ dmas;
