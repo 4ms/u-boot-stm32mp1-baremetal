@@ -845,6 +845,7 @@ dtb-$(CONFIG_STM32MP15x) += \
 	stm32mp157f-ev1.dtb \
 	stm32mp15xx-dhcom-pdk2.dtb \
 	stm32mp157c-osd32mp1-brk.dtb \
+	stm32mp157c-osd32mp1-brk-i2c6.dtb \
 	stm32mp157c-metamodule-p6.dtb \
 	stm32mp153dad-metamodule-p7.dtb
 
