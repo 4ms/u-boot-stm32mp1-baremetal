@@ -161,7 +161,7 @@
 	u-boot,dm-pre-reloc;
 };
 
-&uart4{
+&usart6{
 	u-boot,dm-pre-reloc;
 };
 

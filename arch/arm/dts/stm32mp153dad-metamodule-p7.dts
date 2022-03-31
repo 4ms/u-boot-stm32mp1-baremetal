@@ -84,21 +84,7 @@
 
 		red1{
 			label = "LED1_RED";
-			gpios = <&gpioz 6 GPIO_ACTIVE_LOW>;
-			status = "okay";
-			default-state = "off";
-		};
-
-		green1{
-			label = "LED1_GRN";
-			gpios = <&gpioz 7 GPIO_ACTIVE_LOW>;
-			status = "okay";
-			default-state = "on";
-		};
-
-		blue1{
-			label = "LED1_BLUE";
-			gpios = <&gpioi 8 GPIO_ACTIVE_LOW>;
+			gpios = <&gpioa 15 GPIO_ACTIVE_LOW>;
 			status = "okay";
 			default-state = "off";
 		};
@@ -197,26 +183,26 @@
   };
 
 
-	i2c4_pins_mx: i2c4_mx-0 {
-		u-boot,dm-pre-reloc;
-		pins {
-			u-boot,dm-pre-reloc;
-			pinmux = <STM32_PINMUX('B', 8, AF6)>, /* I2C4_SCL */
-					 <STM32_PINMUX('B', 9, AF6)>; /* I2C4_SDA */
-			bias-disable;
-			drive-open-drain;
-			slew-rate = <0>;
-		};
-	};
-
-	i2c4_sleep_pins_mx: i2c4_sleep_mx-0 {
-		u-boot,dm-pre-reloc;
-		pins {
-			u-boot,dm-pre-reloc;
-			pinmux = <STM32_PINMUX('B', 8, ANALOG)>, /* I2C4_SCL */
-					 <STM32_PINMUX('B', 9, ANALOG)>; /* I2C4_SDA */
-		};
-	};
+  i2c4_pins_mx: i2c4_mx-0 {
+  	u-boot,dm-pre-reloc;
+  	pins {
+  		u-boot,dm-pre-reloc;
+  		pinmux = <STM32_PINMUX('B', 8, AF6)>, /* I2C4_SCL */
+  				 <STM32_PINMUX('B', 9, AF6)>; /* I2C4_SDA */
+  		bias-disable;
+  		drive-open-drain;
+  		slew-rate = <0>;
+  	};
+  };
+  
+  i2c4_sleep_pins_mx: i2c4_sleep_mx-0 {
+  	u-boot,dm-pre-reloc;
+  	pins {
+  		u-boot,dm-pre-reloc;
+  		pinmux = <STM32_PINMUX('B', 8, ANALOG)>, /* I2C4_SCL */
+  				 <STM32_PINMUX('B', 9, ANALOG)>; /* I2C4_SDA */
+  	};
+  };
 
   i2c5_pins_mx: i2c5-0 {
     pins {
@@ -362,33 +348,44 @@
       };
     };
 
-  usart6_pins_mx: usart6-0 {
+  usart6_pins_mx: usart6_mx-0 {
+	u-boot,dm-pre-reloc;
       pins1 {
+		u-boot,dm-pre-reloc;
         pinmux = <STM32_PINMUX('C', 6, AF7)>; /* USART6_TX */
         bias-disable;
         drive-push-pull;
         slew-rate = <0>;
       };
       pins2 {
+		u-boot,dm-pre-reloc;
         pinmux = <STM32_PINMUX('C', 7, AF7)>; /* USART6_RX */
-        bias-disable;
+        bias-pull-up;
       };
     };
 
     usart6_idle_pins_mx: usart6-idle-0 {
+	  u-boot,dm-pre-reloc;
       pins1 {
-        pinmux = <STM32_PINMUX('C', 6, ANALOG)>; /* USART6_TX */
+		u-boot,dm-pre-reloc;
+        pinmux = <STM32_PINMUX('C', 6, AF6)>; /* USART6_TX */
+        bias-disable;
+        drive-push-pull;
+        slew-rate = <0>;
       };
       pins2 {
+		u-boot,dm-pre-reloc;
         pinmux = <STM32_PINMUX('C', 7, AF7)>; /* USART6_RX */
-        bias-disable;
+        bias-pull-up;
       };
     };
 
     usart6_sleep_pins_mx: usart6-sleep-0 {
+	  u-boot,dm-pre-reloc;
       pins {
+		u-boot,dm-pre-reloc;
         pinmux = <STM32_PINMUX('C', 6, ANALOG)>, /* USART6_TX */
-           <STM32_PINMUX('C', 7, ANALOG)>; /* USART6_RX */
+          		 <STM32_PINMUX('C', 7, ANALOG)>; /* USART6_RX */
       };
     };
 
