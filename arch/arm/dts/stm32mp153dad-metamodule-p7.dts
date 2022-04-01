@@ -1036,7 +1036,7 @@
 	pinctrl-2 = <&sdmmc1_sleep_pins_mx>;
 	status = "okay";
 
-	cd-gpios = <&gpiog 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+	cd-gpios = <&gpiog 9 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 	disable-wp;
 	st,neg-edge;
 	bus-width = <4>;
