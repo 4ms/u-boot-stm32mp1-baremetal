@@ -121,11 +121,18 @@
     CLK_LPTIM23_PCLK3
     CLK_LPTIM45_LSE
 	>;
+	pll1: st,pll@0 {
+		compatible = "st,stm32mp1-pll";
+		reg = <0>;
+		cfg = < 2 99 0 1 1 PQR(1,0,0) >;
+		frac = < 0x0 >;
+		u-boot,dm-pre-reloc;
+	};
 	pll2:st,pll@1 {
 		compatible = "st,stm32mp1-pll";
 		reg = <1>;
 		cfg = < 2 65 1 0 0 PQR(1,1,1) >;
-		frac = < 0x1400 >;
+		frac = < 0x1000 >;
 		u-boot,dm-pre-reloc;
 	};
 	pll3:st,pll@2 {
