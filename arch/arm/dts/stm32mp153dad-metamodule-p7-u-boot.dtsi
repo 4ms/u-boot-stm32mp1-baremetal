@@ -23,10 +23,10 @@
 	};
 
 	config{
-		u-boot,boot-led = "LED2_GRN";
-		u-boot,error-led = "LED2_RED";
+		u-boot,boot-led = "LED1_GRN";
+		u-boot,error-led = "LED1_RED";
 		u-boot,mmc-env-partition = "ssbl";
-		st,stm32prog-gpios = <&gpiod 9 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+		st,stm32prog-gpios = <&gpioe 1 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; //DEBUG3 pin
 	};
 
 	clocks {
